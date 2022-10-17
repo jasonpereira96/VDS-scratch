@@ -1,5 +1,5 @@
 const width = 800, height = 600;
-const N = 12;
+const N = 11;
 const data = [];
 const side = 20;
 const E = side * 0.05
@@ -7,6 +7,12 @@ const colors = ["pink", "aqua", "lightgreen"];
 let svg;
 let id = 0;
 let selectedRowIndex = null;
+let selectedColIndex = null;
+const textStyle = `
+  font-size: 10px;
+`;
+
+var tip = d3.tip().attr('class', 'd3-tip').html((event, d) => d.color);
 
 
 for (let i=0; i<N; i++) {
@@ -19,7 +25,9 @@ for (let i=0; i<N; i++) {
         color: "lightblue",
         selected: false,
         id: id++,
-        isDragHandle: true
+        isDragHandle: true,
+        isRowDragHandle: j === 0,
+        isColDragHandle: i === 0
       });
     } else {
       data.push({
@@ -60,19 +68,37 @@ function renderMatrix (data, svg) {
   .attr("fill-opacity", d => d.selected ? 0.4 : 1)
   .attr("width", side)
   .attr("height", side)
+  .call(tip)
+
+  svg.selectAll(".node").on('mouseover', tip.show)
+  .on('mouseout', tip.hide)
+
+
+
 
   return svg.selectAll(".drag-handle")
   .data(data.filter(d => d.isDragHandle), d => d.id)
-  .join("image")
-  .attr("stroke-width", 0.5)
-  .attr("y", d => d.y + 0 * side + 5)
-  .attr("x", d => d.x + 0 * side + 5)
+  .join("text")
+  .text(d => {
+    if (d.row === 0 && d.col === 0) {
+      return "";
+    }
+    if (d.row === 0) {
+      return `C${d.col}`;
+    }
+    if (d.col === 0) {
+      return `R${d.row}`;
+    }
+  })
+  .attr("y", d => d.y + 0 * side + 15)
+  .attr("x", d => d.x + 0 * side + 2)
   // .attr("r", side / 2)
   .attr("class", d => getSquareClass(d) + " drag-handle")
   // .attr("fill",d => d.color)
-  .attr("width", side * 0.5)
-  .attr("height", side * 0.5)
-  .attr("href", "img/drag-handle.svg")
+  // .attr("width", side * 0.5)
+  // .attr("height", side * 0.5)
+  .attr("style", textStyle)
+  // .attr("href", "img/drag-handle.svg")
   // .on("click", onHandleClick);
   
 }
@@ -108,18 +134,16 @@ function swapRows(data, rowIndex1, rowIndex2) {
     let t = d1.color;
     d1.color = d2.color;
     d2.color = t;
+  }
+}
+function swapCols(data, colIndex1, colIndex2) {
+  for (let i=0; i<N; i++) {
+    let d1 = data.find(d => d.col === colIndex1 && d.row === i)
+    let d2 = data.find(d => d.col === colIndex2 && d.row === i)
 
-    // let t = d1.y;
-    // d1.y = d2.y;
-    // d2.y = t;
-
-    // t = d1.row;
-    // d1.row = d2.row;
-    // d2.row = t;
-
-    // t = d1.selected;
-    // d1.selected = d2.selected;
-    // d2.selected = t;
+    let t = d1.color;
+    d1.color = d2.color;
+    d2.color = t;
   }
 }
 
@@ -139,28 +163,44 @@ function getColor() {
 }
 
 function onHandleClick(e, handleDatum) {
-
-  highlightRow(data, handleDatum.row);
- 
+  if (handleDatum.isRowDragHandle) {
+    highlightRow(data, handleDatum.row);
+    selectedRowIndex = handleDatum.row;
+    selectedColIndex = null;
+  } else {
+    highlightCol(data, handleDatum.col);
+    selectedColIndex = handleDatum.col;
+    selectedRowIndex = null;
+  }
   renderMatrix(data, svg);
-  selectedRowIndex = handleDatum.row;
 }
 
 document.addEventListener('keydown', (e) => {
-  e.preventDefault();
-  if (selectedRowIndex) {
+  if (selectedRowIndex || selectedColIndex) {
     switch (e.key) {
       case "ArrowUp" : {
-        if (selectedRowIndex === 0) return;
+        if (selectedRowIndex === 1 || selectedRowIndex === null) return;
         swapRows(data, selectedRowIndex, selectedRowIndex - 1);
         highlightRow(data, selectedRowIndex - 1);
         selectedRowIndex--;
       } break;
       case "ArrowDown" : {
-        if (selectedRowIndex === N-1) return;
+        if (selectedRowIndex === N-1 || selectedRowIndex === null) return;
         swapRows(data, selectedRowIndex, selectedRowIndex + 1);
         highlightRow(data, selectedRowIndex + 1);
         selectedRowIndex++;
+      } break;
+      case "ArrowLeft" : {
+        if (selectedColIndex === 1 || selectedColIndex === null) return;
+        swapCols(data, selectedColIndex, selectedColIndex - 1);
+        highlightCol(data, selectedColIndex - 1);
+        selectedColIndex--;
+      } break;
+      case "ArrowRight" : {
+        if (selectedColIndex === N-1 || selectedColIndex === null) return;
+        swapCols(data, selectedColIndex, selectedColIndex + 1);
+        highlightCol(data, selectedColIndex + 1);
+        selectedColIndex++;
       } break;
       default: {}
       break;
@@ -184,8 +224,19 @@ function highlightRow(data, rowIndex) {
   });
 }
 
+function highlightCol(data, colIndex) {
+  data.forEach(d => {
+    if (d.col === colIndex) {
+      d.selected = true;
+    } else {
+      d.selected = false;
+    }
+  });
+}
+
 function clearSelection(data) {
   selectedRowIndex = null;
+  selectedColIndex = null;
   highlightRow(data, -1);
   renderMatrix(data, svg);
 }
