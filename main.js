@@ -12,7 +12,14 @@ const textStyle = `
   font-size: 10px;
 `;
 
-var tip = d3.tip().attr('class', 'd3-tip').html((event, d) => d.color);
+var tip = d3.tip().attr('class', 'd3-tip').html((event, d) => d.data.value.toFixed(2));
+
+let c = d3.scaleOrdinal().domain([0, 1]).range(["pink", "lightblue"]);
+
+const color = function (value) {
+  return value <= 0.5 ? c(0) : c(1);
+}
+
 
 
 for (let i=0; i<N; i++) {
@@ -22,7 +29,6 @@ for (let i=0; i<N; i++) {
         x: j * side,
         y: i * side,
         row: i, col: j,
-        color: "lightblue",
         selected: false,
         id: id++,
         isDragHandle: true,
@@ -36,8 +42,9 @@ for (let i=0; i<N; i++) {
         row: i, col: j,
         isDragHandle: false,
         id: id++,
-        // color: colors[(i + j) % colors.length]
-        color: getColor()
+        data: {
+          value: getRandomNumber()
+        }
       });
     }
   }
@@ -64,7 +71,7 @@ function renderMatrix (data, svg) {
   .attr("y", d => d.y)
   .attr("x", d => d.x)
   .attr("class", d => getSquareClass(d) + " node")
-  .attr("fill",d => d.color)
+  .attr("fill",d => color(d.data.value))
   .attr("fill-opacity", d => d.selected ? 0.4 : 1)
   .attr("width", side)
   .attr("height", side)
@@ -94,7 +101,6 @@ function renderMatrix (data, svg) {
   .attr("x", d => d.x + 0 * side + 2)
   // .attr("r", side / 2)
   .attr("class", d => getSquareClass(d) + " drag-handle")
-  // .attr("fill",d => d.color)
   // .attr("width", side * 0.5)
   // .attr("height", side * 0.5)
   .attr("style", textStyle)
@@ -131,9 +137,9 @@ function swapRows(data, rowIndex1, rowIndex2) {
     let d1 = data.find(d => d.row === rowIndex1 && d.col === i)
     let d2 = data.find(d => d.row === rowIndex2 && d.col === i)
 
-    let t = d1.color;
-    d1.color = d2.color;
-    d2.color = t;
+    let t = d1.data;
+    d1.data = d2.data;
+    d2.data = t;
   }
 }
 function swapCols(data, colIndex1, colIndex2) {
@@ -141,9 +147,9 @@ function swapCols(data, colIndex1, colIndex2) {
     let d1 = data.find(d => d.col === colIndex1 && d.row === i)
     let d2 = data.find(d => d.col === colIndex2 && d.row === i)
 
-    let t = d1.color;
-    d1.color = d2.color;
-    d2.color = t;
+    let t = d1.data;
+    d1.data = d2.data;
+    d2.data = t;
   }
 }
 
@@ -160,6 +166,11 @@ function randn_bm() {
 function getColor() {
   let randomNumber = Math.random();
   return randomNumber <= 0.5 ? "pink" : "lightblue";
+}
+
+function getRandomNumber() {
+  let randomNumber = Math.random();
+  return randomNumber;
 }
 
 function onHandleClick(e, handleDatum) {
