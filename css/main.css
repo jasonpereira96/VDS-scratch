@@ -1,0 +1,53 @@
+body {
+    font-family: 'Roboto', sans-serif;
+}
+#brush-value {
+    padding: 10px;
+    font-size: 18px;
+    background-color: pink;
+    font-weight: bold;
+}
+
+#my_dataviz {
+    width: 400px;
+    height: 400px;
+}
+
+#header {
+    display: flex;
+}
+.control {
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.charts {
+    display: flex;
+}
+.chart {
+    flex: 1;
+    padding: 5px;
+}
+.chart-headings {
+    display: flex;
+}
+.chart-heading {
+    padding: 5px;
+    flex: 1;
+    padding-left: 50px;
+    font-size: 24px;
+}
+#clear-button {
+    color: white;
+    background: darkblue;
+    border: none;
+    outline: none;
+    width: 80px;
+    height: 35px;
+    border-radius: 5px;
+}
+#clear-button:hover {
+    cursor: pointer;
+}
