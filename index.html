@@ -4,14 +4,49 @@
 
 <head>
 <!-- Load d3.js -->
-
+<link rel="stylesheet" href="css/main.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?&family=Roboto&display=swap" rel="stylesheet">
 </head>
 
 <body>
-<!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
+<div id="header">
+  <div class="control">
+    <button id ="clear-button">Clear</button>
+  </div>
+  <div class="control">
+    <select id="mode-select">
+      <option value="swap">Swap</option>
+      <option value="brush">Brush</option>
+      <option value="real">Real</option>
+    </select>
+  </div>
+  <div class="control">
+    <div id="brush-value">
+      Sum: 0
+    </div>
+  </div>
+
+</div>
+
+<div class="chart-headings">
+  <div class="chart-heading">PUF Matrix</div>
+  <div class="chart-heading">Similarity Heatmap</div>
+  <div class="chart-heading">Histogram</div>
+</div>
+
+<div class="charts">
+  <div class="chart" id="matrix"></div>
+  <div class="chart" id="heatmap"></div>
+  <div class="chart" id="histogram"></div>
+</div>
+
 
 <script src="https://d3js.org/d3.v7.js"></script>
+<script src="https://unpkg.com/d3-v6-tip@1.0.6/build/d3-v6-tip.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bumbeishvili/d3-tip-for-v6@4/d3-tip.min.css">
+<script src="histogram.js"></script>
 <script src="main.js"></script>
 
 </body>
