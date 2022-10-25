@@ -240,11 +240,6 @@ function getColor() {
   return randomNumber <= 0.5 ? "pink" : "lightblue";
 }
 
-function getRandomNumber() {
-  let randomNumber = Math.random() * 2 - 1;
-  return randomNumber;
-}
-
 function onHandleClick(e, handleDatum) {
   if (app.brushEnabled) {
     return;
@@ -456,7 +451,7 @@ function toBinaryString(value) {
     digits.unshift(digit);
     value = value >>> 1;
   }
-  while (digits.length < 4) {
+  while (digits.length < Math.log2(N - 1)) {
     digits.unshift(0);
   }
   return digits.join("");
