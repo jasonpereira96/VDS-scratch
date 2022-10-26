@@ -2,20 +2,16 @@ class Challenge {
     /**
      * 
      * @param {Number} value an integer value which is the value of this challenge vector
-     * The constructor will take a value convert it to binary. The binary form will be stored in this.vector
+     * The constructor will take a value convert it to binary. The binary form will be stored in this.vectorexe
      */
-    constructor(value) {
-        let vector = [];
-        while (value > 0) {
-            let bit = value % 2;
-            vector.unshift(bit);
-            value = Math.floor(value / 2);
-        }
-        while (vector.length < 4) {
+    constructor(vector) {
+        while (vector.length < 64) {
             vector.unshift(0);
         }
-        this.value = value;
-        this.vector = vector;
+        this.vector = vector.map(d => parseInt(d, 2));
+
+        // using BigInt because Javascript can only handle numbers up to 2^53 -_-
+        this.value = BigInt("0b" + vector.join(""));
     }
 
     getBit(position) { // 1-indexed as according to the paper

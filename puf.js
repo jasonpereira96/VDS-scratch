@@ -1,7 +1,26 @@
 class PUF {
-  constructor(stages = 4) {
+  constructor(stages = 4, {
+    fromDeltas = false,
+    initialDeltas
+  }) {
     this.stages = stages;
-    let deltas = [];
+    this.deltas = [];
+
+    if (fromDeltas) {
+      for (let i=0; i<stages; i++) {
+        this.deltas.push({
+          0: initialDeltas[i],
+          1: initialDeltas[i + stages]
+        });
+      }
+      /*for (let i=0; i<2*stages; i+=2) {
+        this.deltas.push({
+          0: initialDeltas[i],
+          1: initialDeltas[i + 1]
+        });
+      }*/
+      return;  
+    }
 
     // create a normal (gaussian) distribution to sample values from
     // since the delta values need to be normally distributed according to the paper
@@ -11,13 +30,12 @@ class PUF {
     const randoms = distribution.random(2 * stages);
 
     for (let i=0; i<2*stages; i += 2) {
-      deltas.push({
+      this.deltas.push({
         0: randoms[i],
         1: randoms[i + 1]
       });
     }
     // this.deltas store the delta values for all the stages
-    this.deltas = deltas;
   }
 
   getDelta(position) { // 1-indexed
