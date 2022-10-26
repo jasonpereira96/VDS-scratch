@@ -1,4 +1,9 @@
 class Challenge {
+    /**
+     * 
+     * @param {Number} value an integer value which is the value of this challenge vector
+     * The constructor will take a value convert it to binary. The binary form will be stored in this.vector
+     */
     constructor(value) {
         let vector = [];
         while (value > 0) {

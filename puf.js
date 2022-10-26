@@ -3,6 +3,8 @@ class PUF {
     this.stages = stages;
     let deltas = [];
 
+    // create a normal (gaussian) distribution to sample values from
+    // since the delta values need to be normally distributed according to the paper
     const mean = 0;
     const variance = 1;
     const distribution = gaussian(mean, variance);
@@ -14,11 +16,8 @@ class PUF {
         1: randoms[i + 1]
       });
     }
+    // this.deltas store the delta values for all the stages
     this.deltas = deltas;
-    // this.responses = [];
-    // for (let i = 0; i < 256; i++) {
-    //   this.responses.push(0);
-    // }
   }
 
   getDelta(position) { // 1-indexed
@@ -35,9 +34,12 @@ class PUF {
   }
   getResponseValue(challenge) {
     const n = challenge.getLength();
-    return this.response(challenge, n);
+    return this.response(challenge, n); // the final response is actually ∆(n)
   }
-  // internal
+
+  // recursive computation of ∆
+  // refer the paper, equation 2
+  // the paper uses 1 indexed positions everywhere, so position is 1-indexed
   response(challenge, position) {
     if (position === 0) {
       return 0;
