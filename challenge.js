@@ -1,15 +1,12 @@
 class Challenge {
     /**
-     * 
-     * @param {Number} value an integer value which is the value of this challenge vector
-     * The constructor will take a value convert it to binary. The binary form will be stored in this.vectorexe
+     * @param {Array} vector an array of 0s and 1s which represent the challenge vector
      */
     constructor(vector) {
         while (vector.length < 64) {
             vector.unshift(0);
         }
-        this.vector = vector.map(d => parseInt(d, 2));
-
+        this.vector = vector;
         // using BigInt because Javascript can only handle numbers up to 2^53 -_-
         this.value = BigInt("0b" + vector.join(""));
     }

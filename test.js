@@ -12,7 +12,7 @@ function main(data) {
 
     let challenges = [];
     for (let challenge of chal_list) {
-        challenges.push(new Challenge(challenge.split("")));
+        challenges.push(new Challenge(challenge.split("").map(d => parseInt(d, 2))));
     }
 
     let res = [];
