@@ -1,4 +1,4 @@
-const N = 8 + 1;
+const N = 16 + 1;
 const data = [];
 const side = 20;
 const width = side * N + 15, height = side * N;
@@ -15,7 +15,11 @@ const textStyle = `
 
 const brush = d3.brush().on("end", brushed);
 
-var tip = d3.tip().attr('class', 'd3-tip').html((event, d) => d.data.value.toFixed(2));
+var tip = d3.tip().attr('class', 'd3-tip').html((event, d) => {
+  let pufIndex = d.pufIndex;
+  let challengeIndex = d.challengeIndex;
+  return app.pufs[pufIndex].getResponse(app.challenges[challengeIndex]);
+});
 
 // let c = d3.scaleOrdinal().domain([0, 1]).range(["#eeeeee", "#000000"]);
 let c = d3.scaleOrdinal().domain([0, 1]).range(["lightblue", "pink"]);
@@ -35,29 +39,31 @@ main();
 
 
 function populateData() {
-  for (let i = 0; i < N; i++) {
-    for (let j = 0; j < N; j++) {
-      if (i == 0 || j === 0) {
+  for (let rowIndex = 0; rowIndex < N; rowIndex++) {
+    for (let colIndex = 0; colIndex < N; colIndex++) {
+      if (rowIndex == 0 || colIndex === 0) {
         data.push({
-          x: j * side,
-          y: i * side,
-          row: i, col: j,
+          x: colIndex * side,
+          y: rowIndex * side,
+          row: rowIndex, col: colIndex,
           selected: false,
           id: id++,
           isDragHandle: true,
-          isRowDragHandle: j === 0,
-          isColDragHandle: i === 0
+          pufIndex: colIndex - 1,
+          challengeIndex: rowIndex - 1,
+          isRowDragHandle: colIndex === 0,
+          isColDragHandle: rowIndex === 0
         });
       } else {
         data.push({
-          x: j * side,
-          y: i * side,
-          row: i, col: j,
+          x: colIndex * side,
+          y: rowIndex * side,
+          row: rowIndex, col: colIndex,
+          pufIndex: colIndex - 1,
+          challengeIndex: rowIndex - 1,
           isDragHandle: false,
           id: id++,
-          data: {
-            value: getRandomNumber()
-          }
+          data: {}
         });
       }
     }
@@ -72,6 +78,8 @@ function populateData() {
 
 function main() {
   populateData();
+  main2();
+
   svg = d3.create("svg")
     .attr("viewBox", [0, 0, width, height])
     .attr("stroke-width", 2);
@@ -109,6 +117,63 @@ function main() {
 
   // svg.call(brush);
   initializeEventListeners();
+
+}
+
+function main2() {
+  const pufs = [];
+  const challenges = [];
+  let D = 16;
+
+  for (let i=0; i<D; i++) {
+    pufs.push(new PUF(4));
+  }
+  for (let i=0; i<D; i++) {
+    challenges.push(new Challenge(toBinaryString(i).split("").map(v => parseInt(v, 2))));
+  }
+  app.pufs = pufs;
+  app.challenges = challenges;
+}
+
+function groupChallenges(bitPosition) {
+  const C0 = app.challenges.filter(challenge => challenge.getBit(bitPosition) === 0);
+  const C1 = app.challenges.filter(challenge => challenge.getBit(bitPosition) === 1);
+
+  function parityComparator(challenge1, challenge2) {
+    const parity1 = challenge1.getParity(bitPosition + 1);
+    const parity2 = challenge2.getParity(bitPosition + 1);
+
+    if (isEven(parity1) && isEven(parity2)) {
+      return 0;
+    } else if (isEven(parity1) && isOdd(parity2)) {
+      return -1;
+    } else if (isOdd(parity1) && isEven(parity2)) {
+      return 1;
+    } else if (isOdd(parity1) && isOdd(parity2)) {
+      return 0;
+    }
+  }
+
+  C0.sort(parityComparator);
+  C1.sort(parityComparator);
+
+  app.challenges = [...C0, ...C1];
+}
+
+function sortPufs(bitPosition, deltaNumber) {
+  if (deltaNumber === 0) {
+    app.pufs.sort((p1, p2) => p1.getDelta0(bitPosition) - p2.getDelta0(bitPosition));
+  } else if (deltaNumber === 1) {
+    app.pufs.sort((p1, p2) => p1.getDelta1(bitPosition) - p2.getDelta1(bitPosition));
+  } else {
+    throw new Error("Incorrect delta Number");
+  }
+}
+
+function printC() {
+  for (let c of app.challenges) {
+    console.log(c.getString());
+  }
 }
 
 
@@ -129,7 +194,12 @@ function renderMatrix(data) {
     .attr("y", d => d.y)
     .attr("x", d => d.x)
     .attr("class", d => getSquareClass(d) + " node")
-    .attr("fill", d => app.colorScale(d.data.value))
+    .attr("fill", d => {
+      let puf = app.pufs[d.pufIndex];
+      let chal = app.challenges[d.challengeIndex];
+      let r = puf.getResponse(chal);
+      return app.colorScale(r);
+    })
     .attr("fill-opacity", d => d.selected ? 0.45 : 1)
     .attr("width", side)
     .attr("height", side)
@@ -151,7 +221,7 @@ function renderMatrix(data) {
         return `P${d.col}`;
       }
       if (d.col === 0) {
-        return toBinaryString(d.row - 1);
+        return app.challenges[d.challengeIndex].getString()
       }
     })
     .attr("y", d => d.y + 0 * side + 15)
@@ -239,6 +309,7 @@ function getColor() {
   let randomNumber = Math.random();
   return randomNumber <= 0.5 ? "pink" : "lightblue";
 }
+
 
 function onHandleClick(e, handleDatum) {
   if (app.brushEnabled) {
@@ -458,7 +529,7 @@ function toBinaryString(value) {
 }
 
 function belowThreshold(value) {
-  return value <= 0; 
+  return value < 0; 
 }
 
 function reorderByDelta(bitIndex) {

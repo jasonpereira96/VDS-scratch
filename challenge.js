@@ -3,7 +3,7 @@ class Challenge {
      * @param {Array} vector an array of 0s and 1s which represent the challenge vector
      */
     constructor(vector) {
-        while (vector.length < 64) {
+        while (vector.length < 4) {
             vector.unshift(0);
         }
         this.vector = vector;
@@ -25,5 +25,16 @@ class Challenge {
 
     getString() {
         return this.vector.join("");
+    }
+
+    getParity(fromBitPosition) {
+        let parity = 0;
+        for (let i=fromBitPosition; i<=this.getLength(); i++) {
+            let bit = this.getBit(i);
+            if (bit === 1) {
+                parity++;
+            }
+        }
+        return parity;
     }
 }

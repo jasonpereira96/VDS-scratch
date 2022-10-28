@@ -1,10 +1,13 @@
 class PUF {
-  constructor(stages = 4, {
-    fromDeltas = false,
-    initialDeltas
-  }) {
+
+  static count = 0;
+  
+  constructor(stages = 4, options = {}) {
+    const { fromDeltas, initialDeltas } = options;
+
     this.stages = stages;
     this.deltas = [];
+    this.id = PUF.count++;
 
     if (fromDeltas) {
       for (let i=0; i<stages; i++) {
@@ -70,5 +73,9 @@ class PUF {
     } else {
       throw new Error("something went wrong");
     }
+  }
+
+  getId() {
+    return this.id;
   }
 }

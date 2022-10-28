@@ -42,6 +42,14 @@ function generateResponseMatrix() {
   return m;
 }
 
+function isEven(value) {
+  return value % 2 === 0;
+}
+
+function isOdd(value) {
+  return value % 2 === 1;
+}
+
 function getOrderedData(data, challengeBitPosition, deltaIndex, deltaBit) {
 
 }
