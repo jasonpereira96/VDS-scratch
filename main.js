@@ -1,4 +1,5 @@
 const N = 16 + 1;
+const STAGES = 4;
 const data = [];
 const side = 20;
 const width = side * N + 15, height = side * N;
@@ -78,19 +79,20 @@ function populateData() {
 
 function main() {
   populateData();
-  main2();
+  initPufs();
+  initChallenges();
 
   svg = d3.create("svg")
     .attr("viewBox", [0, 0, width, height])
     .attr("stroke-width", 2);
 
-  heatmapSvg = d3.create("svg")
-    .attr("viewBox", [0, 0, width, height])
-    .attr("stroke-width", 2);
+  // heatmapSvg = d3.create("svg")
+  //   .attr("viewBox", [0, 0, width, height])
+  //   .attr("stroke-width", 2);
 
-  histogramSvg = d3.create("svg")
-    .attr("viewBox", [0, 0, width, height])
-    .attr("stroke-width", 2);
+  // histogramSvg = d3.create("svg")
+  //   .attr("viewBox", [0, 0, width, height])
+  //   .attr("stroke-width", 2);
 
 
 
@@ -98,7 +100,7 @@ function main() {
   // add the brush
 
   renderMatrix(data);
-  renderHeatmap(data);
+  // renderHeatmap(data);
 
 
   let handles = svg.selectAll(".h21");
@@ -106,32 +108,36 @@ function main() {
 
 
   document.getElementById("matrix").append(svg.node());
-  document.getElementById("heatmap").append(heatmapSvg.node());
+  // document.getElementById("heatmap").append(heatmapSvg.node());
   // document.getElementById("histogram").append(renderHistogram(data));
 
 
-  heatmapSvg.selectAll(".node").call(tip);
-  heatmapSvg.selectAll(".node")
-    .on('mouseover', tip.show)
-    .on('mouseout', tip.hide)
+  // heatmapSvg.selectAll(".node").call(tip);
+  // heatmapSvg.selectAll(".node")
+  //   .on('mouseover', tip.show)
+  //   .on('mouseout', tip.hide)
 
   // svg.call(brush);
   initializeEventListeners();
 
 }
 
-function main2() {
+function initPufs() {
   const pufs = [];
-  const challenges = [];
-  let D = 16;
-
+  const D = N - 1;
   for (let i=0; i<D; i++) {
-    pufs.push(new PUF(4));
-  }
-  for (let i=0; i<D; i++) {
-    challenges.push(new Challenge(toBinaryString(i).split("").map(v => parseInt(v, 2))));
+    pufs.push(new PUF(STAGES));
   }
   app.pufs = pufs;
+}
+
+function initChallenges() {
+  const challenges = [];
+  const D = N - 1;
+  for (let i=0; i<D; i++) {
+    let challenge = new Challenge(toBinaryVector(i));
+    challenges.push(challenge);
+  }
   app.challenges = challenges;
 }
 
@@ -160,11 +166,11 @@ function groupChallenges(bitPosition) {
   app.challenges = [...C0, ...C1];
 }
 
-function sortPufs(bitPosition, deltaNumber) {
+function sortPufs(stage, deltaNumber) {
   if (deltaNumber === 0) {
-    app.pufs.sort((p1, p2) => p1.getDelta0(bitPosition) - p2.getDelta0(bitPosition));
+    app.pufs.sort((p1, p2) => p1.getDelta0(stage) - p2.getDelta0(stage));
   } else if (deltaNumber === 1) {
-    app.pufs.sort((p1, p2) => p1.getDelta1(bitPosition) - p2.getDelta1(bitPosition));
+    app.pufs.sort((p1, p2) => p1.getDelta1(stage) - p2.getDelta1(stage));
   } else {
     throw new Error("Incorrect delta Number");
   }
@@ -218,7 +224,7 @@ function renderMatrix(data) {
         return "";
       }
       if (d.row === 0) {
-        return `P${d.col}`;
+        return `P` + app.pufs[d.pufIndex].getId();
       }
       if (d.col === 0) {
         return app.challenges[d.challengeIndex].getString()
@@ -261,7 +267,7 @@ function brushed({ selection }) {
       sum += (belowThreshold(datum.data.value) ? 0 : 1);
     }
     console.log(`Sum: ${sum}`);
-    document.getElementById("brush-value").textContent = `Sum: ${sum}`;
+    document.getElementById("brush-value").value = sum;
   }
 }
 
@@ -328,41 +334,6 @@ function onHandleClick(e, handleDatum) {
 }
 
 function initializeEventListeners() {
-  document.addEventListener('keydown', (e) => {
-    if (selectedRowIndex || selectedColIndex) {
-      switch (e.key) {
-        case "ArrowUp": {
-          if (selectedRowIndex === 1 || selectedRowIndex === null) return;
-          swapRows(data, selectedRowIndex, selectedRowIndex - 1);
-          highlightRow(data, selectedRowIndex - 1);
-          selectedRowIndex--;
-        } break;
-        case "ArrowDown": {
-          if (selectedRowIndex === N - 1 || selectedRowIndex === null) return;
-          swapRows(data, selectedRowIndex, selectedRowIndex + 1);
-          highlightRow(data, selectedRowIndex + 1);
-          selectedRowIndex++;
-        } break;
-        case "ArrowLeft": {
-          if (selectedColIndex === 1 || selectedColIndex === null) return;
-          swapCols(data, selectedColIndex, selectedColIndex - 1);
-          highlightCol(data, selectedColIndex - 1);
-          selectedColIndex--;
-        } break;
-        case "ArrowRight": {
-          if (selectedColIndex === N - 1 || selectedColIndex === null) return;
-          swapCols(data, selectedColIndex, selectedColIndex + 1);
-          highlightCol(data, selectedColIndex + 1);
-          selectedColIndex++;
-        } break;
-        default: { }
-          break;
-      }
-    }
-    renderMatrix(data);
-    renderHeatmap(data);
-  });
-
   document.getElementById("clear-button").addEventListener("click", () => {
     clearSelection(data);
   });
@@ -374,18 +345,32 @@ function initializeEventListeners() {
         app.colorScale = binaryColorScale;
         renderMatrix(data);
       } break;
-      case "swap": {
+      case "view": {
         app.brushEnabled = false;
         app.colorScale = binaryColorScale;
-        renderMatrix(data);
-      } break;
-      case "real": {
-        app.brushEnabled = false;
-        app.colorScale = realColorScale;
         renderMatrix(data);
       }
       default: { }
     }
+  });
+
+  const stageInput = document.getElementById("stage-number");
+  const deltaInput = document.getElementById("delta-number");
+  const challengeBitInput = document.getElementById("challenge-bit-position");
+  const reorderRowsButton = document.getElementById("reorder-rows");
+  const reorderColsButton = document.getElementById("reorder-cols");
+
+  reorderRowsButton.addEventListener("click", function() {
+    let challengeBitPosition = parseInt(challengeBitInput.value, 10);
+    groupChallenges(challengeBitPosition);
+    renderMatrix(data);
+  });
+
+  reorderColsButton.addEventListener("click", function() {
+    let stage = parseInt(stageInput.value, 10);
+    let delta = parseInt(deltaInput.value, 10);
+    sortPufs(stage, delta);
+    renderMatrix(data);
   });
 }
 
@@ -513,19 +498,6 @@ function getSimilarty(data, row1, row2) {
   }
 
   return similarity / (N - 1);
-}
-
-function toBinaryString(value) {
-  let digits = [];
-  while (value > 0) {
-    let digit = value % 2;
-    digits.unshift(digit);
-    value = value >>> 1;
-  }
-  while (digits.length < Math.log2(N - 1)) {
-    digits.unshift(0);
-  }
-  return digits.join("");
 }
 
 function belowThreshold(value) {

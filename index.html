@@ -4,6 +4,7 @@
 
 <head>
 <!-- Load d3.js -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
 <link rel="stylesheet" href="css/main.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,37 +12,93 @@
 </head>
 
 <body>
-<div id="header">
-  <div class="control">
-    <button id ="clear-button">Clear</button>
-  </div>
-  <div class="control">
-    <select id="mode-select">
-      <option value="swap">Swap</option>
-      <option value="brush">Brush</option>
-      <option value="real">Real</option>
-    </select>
-  </div>
-  <div class="control">
-    <div id="brush-value">
-      Sum: 0
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col">
+        <div class="charts">
+          <div class="chart" id="matrix"></div>
+        </div>
+      </div>
+      <div class="col right">
+        <div class="row">
+          <div class="col">
+            <div class="row input-wrapper">
+              <div class="col">
+                Challenge Bit Position
+              </div>
+              <div class="col">
+                <input type="number" class="form-control" id="challenge-bit-position" placeholder="" value="1" min="1" max="4">
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-primary" id="reorder-rows">Reorder Rows</button>
+              </div>
+            </div>
+            <div class="row input-wrapper">
+              <div class="col">
+                Stage Number
+              </div>
+              <div class="col">
+                <select class="form-select" aria-label="Default select example" id="stage-number">
+                  <option value="1" selected>1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </div>
+              <div class="col">
+                .
+              </div>
+            </div>
+            <div class="row input-wrapper">
+              <div class="col">
+                &delta; Number
+              </div>
+              <div class="col">
+                <select class="form-select" aria-label="" id="delta-number">
+                  <option value="0" selected>0</option>
+                  <option value="1">1</option>
+                </select>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-primary mb-3" id="reorder-cols">Reorder Columns</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <div class="row input-wrapper">
+              <div class="col">
+                Mode
+              </div>
+              <div class="col">
+                <select class="form-select" aria-label="Default select example" id="mode-select">
+                  <option value="view" selected>View</option>
+                  <option value="brush">Brush</option>
+                </select>
+              </div>
+              <div class="col">
+                
+              </div>
+            </div>
+            <div class="row input-wrapper">
+              <div class="col">
+                Response Bias
+              </div>
+              <div class="col">
+                <input type="text" readonly class="form-control" placeholder="" id="brush-value"/>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-primary mb-3" id="clear-button">Clear</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-
-</div>
-
-<div class="chart-headings">
-  <div class="chart-heading">PUF Matrix</div>
-  <div class="chart-heading">Similarity Heatmap</div>
-  <div class="chart-heading">Histogram</div>
-</div>
-
-<div class="charts">
-  <div class="chart" id="matrix"></div>
-  <div class="chart" id="heatmap"></div>
-  <!-- <div class="chart" id="histogram"></div> -->
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js" integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk" crossorigin="anonymous"></script>
 <script src="box-muller.js"></script>
 <script src="gaussian.js"></script>
 <script src="https://d3js.org/d3.v7.js"></script>
